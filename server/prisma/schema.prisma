@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Company {
+  id            String   @id @default(uuid())
+  name          String
+  workStartTime String?
+  workEndTime   String?
+  createdAt     DateTime @default(now())
+  users         User[]
+
+  @@map("companies")
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  empNo             Int?               @unique
+  name              String?
+  avatar            String?
+  role              String             @default("employee")
+  companyId         String?
+  timezone          String             @default("Asia/Taipei")
+  createdAt         DateTime           @default(now())
+  company           Company?           @relation(fields: [companyId], references: [id])
+  attendanceRecords AttendanceRecord[]
+  leaveRequests     LeaveRequest[]
+
+  @@map("users")
+}
+
+model AttendanceRecord {
+  id                 String              @id @default(uuid())
+  userId             String
+  workDate           DateTime            @db.Date
+  punchIn            DateTime?
+  punchOut           DateTime?
+  workDuration       Int?
+  gpsLat             Float?
+  gpsLng             Float?
+  status             String              @default("normal")
+  createdAt          DateTime            @default(now())
+  user               User                @relation(fields: [userId], references: [id])
+  correctionRequests CorrectionRequest[]
+
+  @@unique([userId, workDate])
+  @@map("attendance_records")
+}
+
+model CorrectionRequest {
+  id           String           @id @default(uuid())
+  attendanceId String
+  reason       String
+  status       String           @default("pending")
+  createdAt    DateTime         @default(now())
+  attendance   AttendanceRecord @relation(fields: [attendanceId], references: [id])
+
+  @@map("correction_requests")
+}
+
+model LeaveRequest {
+  id        String   @id @default(uuid())
+  userId    String
+  leaveType String
+  startDate DateTime @db.Date
+  startTime String
+  endDate   DateTime @db.Date
+  endTime   String
+  reason    String?
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("leave_requests")
+}

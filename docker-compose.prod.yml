@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  caddy:
+    image: caddy:alpine
+    container_name: flashpoint-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - client
+      - server
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    container_name: flashpoint-postgres
+    environment:
+      POSTGRES_USER: flashtele
+      POSTGRES_PASSWORD: Flash766966-
+      POSTGRES_DB: flashpoint_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: flashpoint-redis
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  server:
+    image: asia-east1-docker.pkg.dev/flashesim/flashpoint/server:latest
+    container_name: flashpoint-server
+    environment:
+      DATABASE_URL: postgresql://flashtele:Flash766966-@postgres:5432/flashpoint_db?schema=public
+      JWT_SECRET: u4ktr078qd0346o1
+      PORT: 3000
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  client:
+    image: asia-east1-docker.pkg.dev/flashesim/flashpoint/client:latest
+    container_name: flashpoint-client
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  caddy-data:
+  caddy-config:
+  postgres-data:
+  redis-data:

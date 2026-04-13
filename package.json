@@ -1,0 +1,20 @@
+{
+  "name": "flashpoint",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n client,server -c blue,green \"yarn workspace @flashpoint/client dev\" \"yarn workspace @flashpoint/server dev\"",
+    "build": "yarn workspace @flashpoint/client build",
+    "dev:client": "yarn workspace @flashpoint/client dev",
+    "dev:server": "yarn workspace @flashpoint/server dev",
+    "db:migrate": "yarn workspace @flashpoint/server db:migrate",
+    "db:push": "yarn workspace @flashpoint/server db:push",
+    "db:studio": "yarn workspace @flashpoint/server db:studio"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

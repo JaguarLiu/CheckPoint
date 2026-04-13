@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: flashpoint-postgres
+    environment:
+      POSTGRES_USER: flashtele
+      POSTGRES_PASSWORD: Flash766966-
+      POSTGRES_DB: flashpoint_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-dev:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: flashpoint-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-dev:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: asia-east1-docker.pkg.dev/flashesim/flashpoint/server:latest
+    container_name: flashpoint-server
+    environment:
+      DATABASE_URL: postgresql://flashtele:Flash766966-@postgres:5432/flashpoint_db?schema=public
+      JWT_SECRET: dev-secret-change-in-production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: asia-east1-docker.pkg.dev/flashesim/flashpoint/client:latest
+    container_name: flashpoint-client
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  postgres-dev:
+  redis-dev:

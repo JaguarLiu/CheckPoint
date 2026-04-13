@@ -1,4 +1,4 @@
-flashpoint.flashesim.com {
+xxx.xxx.com {
 	handle /api/* {
 		reverse_proxy server:3000
 	}
